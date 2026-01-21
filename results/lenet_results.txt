@@ -1,0 +1,7 @@
+Model: LeNet
+Input Image Size: 32x32
+Number of Classes: 4
+Epochs: 15
+Total Parameters: 61,496
+Test Accuracy: 91.64%
+Test Loss: 0.2187
