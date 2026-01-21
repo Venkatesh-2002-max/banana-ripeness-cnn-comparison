@@ -1,0 +1,4 @@
+Dataset Name: Banana Ripeness Classification Dataset
+Number of Classes: 4
+Classes: Unripe, Ripe, Overripe, Rotten
+Train/Validation/Test split maintained across all experiments
