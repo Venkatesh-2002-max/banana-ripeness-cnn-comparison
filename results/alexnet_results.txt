@@ -1,0 +1,42 @@
+AlexNet – Banana Ripeness Detection Results
+==========================================
+
+Model Architecture:
+- AlexNet (Deep Convolutional Neural Network)
+- Input Image Size: 224 × 224 × 3
+- Number of Classes: 4
+  (Unripe, Ripe, Overripe, Rotten)
+
+Training Configuration:
+- Optimizer: Adam
+- Learning Rate: 0.0001
+- Loss Function: Categorical Crossentropy
+- Batch Size: 32
+- Number of Epochs: 15
+- Data Normalization: Rescale (1/255)
+
+Dataset Details:
+- Training Images: 11,793
+- Validation Images: 1,123
+- Test Images: 562
+
+Performance Metrics:
+- Final Training Accuracy: ~97.6%
+- Final Validation Accuracy: ~95.1%
+- Test Accuracy: 93.42%
+- Test Loss: 0.1817
+
+Observations:
+- AlexNet achieved higher accuracy compared to LeNet.
+- Deep convolutional layers enabled better feature extraction.
+- Model showed strong generalization on unseen test data.
+- Training time was significantly higher due to large number of parameters (~46 million).
+
+Remarks:
+- AlexNet provides improved classification performance at the cost of increased
+  computational complexity and memory usage.
+- Results are suitable for comparative analysis with other CNN architectures.
+
+Saved Artifacts:
+- Trained Model: alexnet_banana.keras
+- Training Curves: results/alexnet_training_curves.png
