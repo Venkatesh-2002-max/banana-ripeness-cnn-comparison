@@ -111,12 +111,21 @@ history = model.fit(
 test_loss, test_acc = model.evaluate(test_gen)
 print(f"✅ AlexNet Test Accuracy: {test_acc:.4f}")
 print(f"✅ AlexNet Test Loss: {test_loss:.4f}")
+# ------------------------------------------------------
+# Step 8: Save model
+# ------------------------------------------------------
+# ------------------------------------------------------
+model.save("alexnet_banana.keras")
+print("📁 AlexNet model saved as alexnet_banana.keras")
+
+
 
 # ------------------------------------------------------
 # Step 7: Plot accuracy & loss (for GitHub)
 # ------------------------------------------------------
 
 plt.figure(figsize=(10, 4))
+
 
 # Accuracy plot
 plt.subplot(1, 2, 1)
@@ -143,8 +152,3 @@ os.makedirs("../results", exist_ok=True)
 plt.savefig("../results/alexnet_training_curves.png")
 plt.show()
 
-# ------------------------------------------------------
-# Step 8: Save model
-# ------------------------------------------------------
-model.save("alexnet_banana.keras")
-print("📁 AlexNet model saved as alexnet_banana.keras")

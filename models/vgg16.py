@@ -1,5 +1,5 @@
 # ============================================
-# LeNet Model for Banana Ripeness Detection
+# VGG16 Model for Banana Ripeness Detection
 # ============================================
 
 import tensorflow as tf
@@ -8,82 +8,73 @@ import json
 import os
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import (
-    Conv2D, AveragePooling2D,
-    Flatten, Dense, Dropout
-)
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Flatten, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 
 print("✅ TensorFlow version:", tf.__version__)
 
 # ------------------------------------------------------
-# Step 1: Dataset paths
+# Dataset paths
 # ------------------------------------------------------
 train_dir = r"C:\Users\Venkatesh P\Downloads\archive (1)\Banana Ripeness Classification Dataset\train"
 val_dir   = r"C:\Users\Venkatesh P\Downloads\archive (1)\Banana Ripeness Classification Dataset\valid"
 test_dir  = r"C:\Users\Venkatesh P\Downloads\archive (1)\Banana Ripeness Classification Dataset\test"
 
-IMG_SIZE = (32, 32)   # LeNet originally uses 32x32
+IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
-NUM_CLASSES = 4       # unripe, ripe, overripe, rotten
+NUM_CLASSES = 4
+EPOCHS = 5
 
 # ------------------------------------------------------
-# Step 2: Data preprocessing
+# Data preprocessing
 # ------------------------------------------------------
 datagen = ImageDataGenerator(rescale=1.0 / 255)
 
 train_gen = datagen.flow_from_directory(
-    train_dir,
-    target_size=IMG_SIZE,
-    batch_size=BATCH_SIZE,
-    class_mode="categorical"
+    train_dir, target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE, class_mode="categorical"
 )
 
 val_gen = datagen.flow_from_directory(
-    val_dir,
-    target_size=IMG_SIZE,
-    batch_size=BATCH_SIZE,
-    class_mode="categorical"
+    val_dir, target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE, class_mode="categorical"
 )
 
 test_gen = datagen.flow_from_directory(
-    test_dir,
-    target_size=IMG_SIZE,
-    batch_size=BATCH_SIZE,
-    class_mode="categorical",
+    test_dir, target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE, class_mode="categorical",
     shuffle=False
 )
 
-# Save class indices (important for inference & consistency)
 with open("class_indices.json", "w") as f:
     json.dump(train_gen.class_indices, f)
 
-print("📌 Class indices:", train_gen.class_indices)
+# ------------------------------------------------------
+# Build VGG16 model
+# ------------------------------------------------------
+base_model = VGG16(
+    weights="imagenet",
+    include_top=False,
+    input_shape=(224, 224, 3)
+)
+
+base_model.trainable = False  # Freeze convolution layers
+
+x = base_model.output
+x = Flatten()(x)
+x = Dense(256, activation="relu")(x)
+x = Dropout(0.5)(x)
+output = Dense(NUM_CLASSES, activation="softmax")(x)
+
+model = Model(inputs=base_model.input, outputs=output)
 
 # ------------------------------------------------------
-# Step 3: Build LeNet model
-# ------------------------------------------------------
-model = Sequential([
-    Conv2D(6, kernel_size=(5, 5), activation="tanh",
-           input_shape=(32, 32, 3)),
-    AveragePooling2D(pool_size=(2, 2)),
-
-    Conv2D(16, kernel_size=(5, 5), activation="tanh"),
-    AveragePooling2D(pool_size=(2, 2)),
-
-    Flatten(),
-    Dense(120, activation="tanh"),
-    Dense(84, activation="tanh"),
-    Dropout(0.5),
-    Dense(NUM_CLASSES, activation="softmax")
-])
-
-# ------------------------------------------------------
-# Step 4: Compile model
+# Compile
 # ------------------------------------------------------
 model.compile(
-    optimizer=Adam(learning_rate=1e-3),
+    optimizer=Adam(learning_rate=1e-4),
     loss="categorical_crossentropy",
     metrics=["accuracy"]
 )
@@ -91,52 +82,47 @@ model.compile(
 model.summary()
 
 # ------------------------------------------------------
-# Step 5: Train model
+# Train
 # ------------------------------------------------------
 history = model.fit(
     train_gen,
     validation_data=val_gen,
-    epochs=15
+    epochs=EPOCHS
 )
 
 # ------------------------------------------------------
-# Step 6: Evaluate on test set
+# Test
 # ------------------------------------------------------
 test_loss, test_acc = model.evaluate(test_gen)
-print(f"✅ LeNet Test Accuracy: {test_acc:.4f}")
-print(f"✅ LeNet Test Loss: {test_loss:.4f}")
+print(f"✅ VGG16 Test Accuracy: {test_acc:.4f}")
+print(f"✅ VGG16 Test Loss: {test_loss:.4f}")
 
 # ------------------------------------------------------
-# Step 7: Save model
+# Save model
 # ------------------------------------------------------
-model.save("lenet_banana.keras")
-print("📁 LeNet model saved as lenet_banana.keras")
-import matplotlib.pyplot as plt
+model.save("vgg16_banana.keras")
+print("📁 VGG16 model saved as vgg16_banana.keras")
 
 # ------------------------------------------------------
-# Step 8: Plot Training & Validation Accuracy and Loss
+# Plot
 # ------------------------------------------------------
-plt.figure(figsize=(12, 5))
+os.makedirs("../results", exist_ok=True)
 
-# Accuracy plot
-plt.subplot(1, 2, 1)
-plt.plot(history.history["accuracy"], label="Training Accuracy")
-plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
-plt.xlabel("Epochs")
-plt.ylabel("Accuracy")
-plt.title("LeNet Accuracy")
+plt.figure(figsize=(10,4))
+
+plt.subplot(1,2,1)
+plt.plot(history.history["accuracy"], label="Train")
+plt.plot(history.history["val_accuracy"], label="Validation")
+plt.title("VGG16 Accuracy")
 plt.legend()
 
-# Loss plot
-plt.subplot(1, 2, 2)
-plt.plot(history.history["loss"], label="Training Loss")
-plt.plot(history.history["val_loss"], label="Validation Loss")
-plt.xlabel("Epochs")
-plt.ylabel("Loss")
-plt.title("LeNet Loss")
+plt.subplot(1,2,2)
+plt.plot(history.history["loss"], label="Train")
+plt.plot(history.history["val_loss"], label="Validation")
+plt.title("VGG16 Loss")
 plt.legend()
 
 plt.tight_layout()
-plt.savefig("../results/lenet_training_curves.png")
+plt.savefig("../results/vgg16_training_curves.png")
 plt.show()
 
