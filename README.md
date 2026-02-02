@@ -7,8 +7,6 @@ for banana ripeness detection using image classification.
 - LeNet
 - AlexNet
 - VGG16
-- GoogleNet (Inception)
-- ResNet50
 - MobileNetV2
 
 ## Dataset
