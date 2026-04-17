@@ -1,66 +1,73 @@
-# ============================================
-# Banana Ripeness Prediction (LeNet)
-# ============================================
-
 import tensorflow as tf
 import numpy as np
 import json
+import os
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing import image
 
-print("✅ TensorFlow version:", tf.__version__)
+# ------------------------------------------------------
+# Step 1: Paths
+# ------------------------------------------------------
+MODEL_PATH = "C:\\Users\\Venkatesh P\\Downloads\\banana-ripeness-cnn-comparison\\models\\lenet_banana.keras"
+CLASS_INDEX_PATH = "C:\\Users\\Venkatesh P\\Downloads\\banana-ripeness-cnn-comparison\\models\\class_indices.json"
+
+IMG_SIZE = (32, 32)
+
+# Test image path
+IMG_PATH = "C:\\Users\\Venkatesh P\\Downloads\\images (1).jpeg"
 
 # ------------------------------------------------------
-# Paths
-# ------------------------------------------------------
-MODEL_PATH = r"..\models\lenet_banana.keras"
-CLASS_INDEX_PATH = r"..\models\class_indices.json"
-
-IMG_SIZE = (32, 32)   # ✅ MUST match LeNet training size
-
-# ------------------------------------------------------
-# Load model
+# Step 2: Load model
 # ------------------------------------------------------
 model = tf.keras.models.load_model(MODEL_PATH)
-print("✅ Model loaded successfully")
+print("✅ LeNet model loaded")
 
 # ------------------------------------------------------
-# Load class labels
+# Step 3: Load class labels
 # ------------------------------------------------------
 with open(CLASS_INDEX_PATH, "r") as f:
     class_indices = json.load(f)
 
+# Convert {class: index} → {index: class}
 idx_to_class = {v: k for k, v in class_indices.items()}
 class_labels = [idx_to_class[i] for i in range(len(idx_to_class))]
 
 print("📌 Class labels:", class_labels)
 
 # ------------------------------------------------------
-# Image path (CHANGE THIS)
+# Step 4: Load & preprocess image
 # ------------------------------------------------------
-img_path = r"C:\Users\Venkatesh P\Downloads\banana.jpg"
-# ------------------------------------------------------
-# Load & preprocess image
-# ------------------------------------------------------
-img = image.load_img(img_path, target_size=IMG_SIZE)
+img = image.load_img(IMG_PATH, target_size=IMG_SIZE)
 img_array = image.img_to_array(img)
+img_array = img_array / 255.0          # ✅ SAME preprocessing as training
 img_array = np.expand_dims(img_array, axis=0)
-img_array = img_array / 255.0   # ✅ SAME as training
 
 # ------------------------------------------------------
-# Prediction
+# Step 5: Prediction
 # ------------------------------------------------------
 predictions = model.predict(img_array)
-predicted_class = np.argmax(predictions)
-confidence = predictions[0][predicted_class]
+predicted_index = np.argmax(predictions[0])
+confidence = predictions[0][predicted_index]
 
 # ------------------------------------------------------
-# Output
+# Step 6: Print results
 # ------------------------------------------------------
-print(f"\n🍌 Prediction: {class_labels[predicted_class]}")
-print(f"📊 Confidence: {confidence * 100:.2f}%")
+print("\n🔍 Per-class probabilities:")
+for i, label in enumerate(class_labels):
+    print(f"  [{i}] {label}: {predictions[0][i] * 100:.2f}%")
 
+print(
+    f"\n🍌 Final Prediction: {class_labels[predicted_index]} "
+    f"({confidence * 100:.2f}%)"
+)
+
+# ------------------------------------------------------
+# Step 7: Display image
+# ------------------------------------------------------
 plt.imshow(img)
 plt.axis("off")
-plt.title(f"{class_labels[predicted_class]} ({confidence*100:.2f}%)")
+plt.title(
+    f"Prediction: {class_labels[predicted_index]} "
+    f"({confidence * 100:.2f}%)"
+)
 plt.show()
